@@ -7,12 +7,30 @@
     <Nullable>enable</Nullable>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
     <ContainerRepository>sqlserver-mcp</ContainerRepository>
+
+    <!-- NuGet Package Properties -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sqlserverlocal-mcp</ToolCommandName>
+    <PackageType>McpServer</PackageType>
+    <PackageId>SqlServerLocalMcp</PackageId>
+    <Authors>Brendan Kowitz</Authors>
+    <Description>A .NET-based Model Context Protocol (MCP) server providing 6 essential tools for local SQL Server database inspection, querying, and debugging.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/brendankowitz/dotnet-sqlserver-mcp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/brendankowitz/dotnet-sqlserver-mcp</PackageProjectUrl>
+    <PackageTags>mcp;sql-server;database;model-context-protocol;claude;ai;local</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="/" />
+    <None Include="../.mcp/server.json" Pack="true" PackagePath="/.mcp/" />
   </ItemGroup>
 
 </Project>

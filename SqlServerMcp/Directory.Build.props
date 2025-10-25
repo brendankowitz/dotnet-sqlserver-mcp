@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <!-- SourceLink configuration -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+
+    <!-- Reproducible builds -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Symbol packages -->
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SourceLink for GitHub -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+
+    <!-- Reproducible builds -->
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25" PrivateAssets="All" />
+
+    <!-- GitVersion for automatic versioning -->
+    <PackageReference Include="GitVersion.MsBuild" Version="6.0.5" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

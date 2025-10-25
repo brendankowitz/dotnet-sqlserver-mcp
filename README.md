@@ -2,15 +2,26 @@
 
 A .NET-based Model Context Protocol (MCP) server providing 6 essential tools for SQL Server database inspection, querying, and debugging.
 
+[![NuGet](https://img.shields.io/nuget/v/SqlServerLocalMcp.svg)](https://www.nuget.org/packages/SqlServerLocalMcp/)
+
 ## Quick Start
 
-### Build
+### Install as .NET Tool (Recommended)
+
+```bash
+dotnet tool install --global SqlServerLocalMcp
+```
+
+Then configure in Claude Desktop (see configuration below).
+
+### Or Build from Source
+
 ```bash
 cd SqlServerMcp
 dotnet build
 ```
 
-### Test
+### Test Locally
 ```bash
 export SQL_SERVER_CONNECTION_STRING="Server=localhost;Database=MyDB;Trusted_Connection=True;TrustServerCertificate=True;"
 dotnet run
@@ -22,6 +33,24 @@ Edit the config file for your platform:
 
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+### Option 1: Using Installed .NET Tool (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "sqlserver": {
+      "command": "sqlserverlocal-mcp",
+      "args": [],
+      "env": {
+        "SQL_SERVER_CONNECTION_STRING": "Server=localhost;Database=MySqlDb;Trusted_Connection=True;TrustServerCertificate=True;"
+      }
+    }
+  }
+}
+```
+
+### Option 2: Running from Source
 
 ```json
 {
@@ -45,7 +74,15 @@ Edit the config file for your platform:
 
 ## Setup for Claude CLI (Code Editor)
 
-Use the `claude mcp add` command:
+### Option 1: Using Installed .NET Tool (Recommended)
+
+```bash
+claude mcp add --transport stdio sqlserver \
+  --env SQL_SERVER_CONNECTION_STRING="Server=localhost;Database=MySqlDb;Trusted_Connection=True;TrustServerCertificate=True;" \
+  -- sqlserverlocal-mcp
+```
+
+### Option 2: Running from Source
 
 **Windows:**
 ```bash

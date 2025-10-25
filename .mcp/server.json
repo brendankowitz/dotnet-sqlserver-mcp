@@ -1,0 +1,42 @@
+{
+  "name": "sqlserverlocal-mcp",
+  "description": "A .NET-based MCP server for local SQL Server database inspection, querying, and debugging",
+  "version": "1.0.0",
+  "env": {
+    "SQL_SERVER_CONNECTION_STRING": {
+      "required": true,
+      "secret": true,
+      "description": "SQL Server connection string (e.g., Server=localhost;Database=MyDB;Trusted_Connection=True;TrustServerCertificate=True;)"
+    },
+    "SQL_SERVER_READONLY": {
+      "required": false,
+      "secret": false,
+      "description": "Block INSERT/UPDATE/DELETE operations (default: true)"
+    },
+    "SQL_SERVER_MAX_ROWS": {
+      "required": false,
+      "secret": false,
+      "description": "Maximum rows returned by queries (default: 1000)"
+    },
+    "SQL_SERVER_DEFAULT_TIMEOUT": {
+      "required": false,
+      "secret": false,
+      "description": "Query timeout in seconds (default: 30)"
+    },
+    "SQL_SERVER_ALLOW_PROCEDURE_EXECUTION": {
+      "required": false,
+      "secret": false,
+      "description": "Allow stored procedure execution (default: false)"
+    },
+    "SQL_SERVER_ALLOWED_PROCEDURES": {
+      "required": false,
+      "secret": false,
+      "description": "Comma-separated list of allowed procedures (e.g., dbo.Get*,reporting.*)"
+    },
+    "SQL_SERVER_ALLOW_FUNCTION_EXECUTION": {
+      "required": false,
+      "secret": false,
+      "description": "Allow function execution (default: true)"
+    }
+  }
+}
