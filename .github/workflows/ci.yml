@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'SqlServerMcp/**'
+      - '*.sln'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test
+    uses: ./.github/workflows/build.yml
+    with:
+      dotnet-version: '8.0.x'
+      configuration: 'Release'
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SqlServerMcp.sln
+
+      - name: Format check
+        run: dotnet format SqlServerMcp.sln --verify-no-changes --verbosity diagnostic
+
+      - name: Analyze
+        run: dotnet build SqlServerMcp.sln --configuration Release /p:TreatWarningsAsErrors=true
