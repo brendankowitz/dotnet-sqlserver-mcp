@@ -26,7 +26,9 @@ public class DatabaseTools
 
             if (databases.Count == 0)
             {
-                return "No user databases found.";
+                return "No user databases found.\n\n" +
+                       "This SQL Server instance only has system databases (master, msdb, model, tempdb).\n" +
+                       "User databases may need to be created or restored.";
             }
 
             var result = new Models.QueryResult
@@ -45,7 +47,11 @@ public class DatabaseTools
                 WasTruncated = false
             };
 
-            return _formatter.FormatQueryResult(result);
+            var formattedResult = _formatter.FormatQueryResult(result);
+            formattedResult += $"\n\nFound {databases.Count} user database(s).";
+            formattedResult += "\n💡 Use 'switch_database' to connect to a specific database.";
+
+            return formattedResult;
         }
         catch (Exception ex)
         {
@@ -60,7 +66,19 @@ public class DatabaseTools
         try
         {
             var currentDb = await _sqlService.GetCurrentDatabaseAsync();
-            return $"Current database: {currentDb}";
+            var isSystemDb = new[] { "master", "msdb", "model", "tempdb" }.Contains(currentDb, StringComparer.OrdinalIgnoreCase);
+
+            var message = $"Current database: {currentDb}";
+
+            if (isSystemDb)
+            {
+                message += "\n\n⚠️  NOTE: You are currently connected to a system database.";
+                message += "\nSystem databases contain SQL Server metadata and configuration.";
+                message += "\nFor application data, consider using 'list_databases' to find user databases,";
+                message += "\nthen 'switch_database' to change to a specific database.";
+            }
+
+            return message;
         }
         catch (Exception ex)
         {
