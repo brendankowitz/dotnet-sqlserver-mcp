@@ -1,6 +1,6 @@
 # SQL Server MCP Server
 
-A .NET-based Model Context Protocol (MCP) server providing 6 essential tools for SQL Server database inspection, querying, and debugging.
+A .NET-based Model Context Protocol (MCP) server providing 9 essential tools for SQL Server database inspection, querying, debugging, and dynamic connection discovery.
 
 [![NuGet](https://img.shields.io/nuget/v/SqlServerLocalMcp.svg)](https://www.nuget.org/packages/SqlServerLocalMcp/)
 
@@ -156,7 +156,7 @@ Add to the `env` section:
 }
 ```
 
-## Available Tools (6)
+## Available Tools (9)
 
 ### Core Essential Tools
 
@@ -169,15 +169,78 @@ Add to the `env` section:
 | **get_query_stats** | Performance debugging | Pre-formatted top queries by CPU/duration/execution count |
 | **get_connections** | Connection monitoring | Active sessions with program names and login times |
 
+### Database Management Tools (NEW!)
+
+| Tool | Purpose | Unique Value |
+|------|---------|--------------|
+| **list_databases** | List all databases on the server | Discover available databases with size, state, and recovery model |
+| **get_current_database** | Show current database context | Check which database you're currently connected to |
+| **switch_database** | Switch to a different database | Dynamically change database context without reconnecting |
+
+### Connection Discovery Tools (NEW!)
+
+| Tool | Purpose | Unique Value |
+|------|---------|--------------|
+| **discover_connection_strings** | Find connection strings in solution | Automatically scan appsettings.json, .env files for SQL connection strings |
+
 ## Usage Examples
 
-Ask:
+### Basic Database Queries
 - "List all tables in my database" → Uses `execute_sql` with INFORMATION_SCHEMA query
 - "Describe the Orders table structure" → Uses `describe_table`
 - "What foreign keys reference the Customers table?" → Uses `execute_sql` with sys.foreign_keys query
-- "Show me the top 10 slowest queries" → Uses `get_query_stats`
 - "Find duplicate email addresses in the Users table" → Uses `execute_sql` with GROUP BY/HAVING
 - "Show me the code for the GetCustomerOrders stored procedure" → Uses `get_procedure_definition`
+
+### Performance & Diagnostics
+- "Show me the top 10 slowest queries" → Uses `get_query_stats`
+- "Who is currently connected to the database?" → Uses `get_connections`
+
+### Dynamic Database Discovery (NEW!)
+- "What databases are available on this server?" → Uses `list_databases`
+- "Which database am I connected to?" → Uses `get_current_database`
+- "Switch to the ProductionDB database" → Uses `switch_database`
+- "Find all connection strings in my solution" → Uses `discover_connection_strings`
+- "Scan the project for SQL Server configuration files" → Uses `discover_connection_strings`
+
+## Dynamic Connection String Discovery
+
+The MCP server can now discover SQL Server connection strings directly from your solution files! This eliminates the need for manual configuration and helps you quickly connect to databases defined in your project.
+
+### How It Works
+
+The `discover_connection_strings` tool scans your solution directory for:
+
+1. **appsettings.json files** (including appsettings.Development.json, appsettings.Production.json, etc.)
+   - Looks for the `ConnectionStrings` section
+   - Extracts all connection strings with their names
+
+2. **.env files** (including .env.development, .env.production, etc.)
+   - Scans for environment variables containing SQL/DATABASE/CONNECTION keywords
+   - Identifies connection string patterns (Server=, Data Source=, etc.)
+
+### Example Usage
+
+Simply ask Claude:
+- "Find all SQL Server connection strings in my project"
+- "What databases are configured in this solution?"
+- "Scan for connection strings in appsettings files"
+
+The tool will return discovered connection strings with:
+- Connection string name
+- Source file and type (appsettings vs env)
+- Environment (Development, Production, etc.)
+- Masked connection string (passwords hidden for security)
+
+### Multi-Database Support
+
+Use the database management tools to work with multiple databases:
+
+1. **Discover available databases:** `list_databases`
+2. **Check current database:** `get_current_database`
+3. **Switch to another database:** `switch_database`
+
+This allows you to dynamically explore different databases on the same server without reconfiguring the MCP server!
 
 ## Security
 
@@ -197,15 +260,22 @@ Ask:
 
 ```
 SqlServerMcp/
-├── Program.cs              # Entry point
-├── Configuration/          # Config models
-├── Models/                 # Data models
-├── Services/              # SqlService, ResultFormatter
-└── Tools/                 # 4 tool classes (6 essential tools)
-    ├── QueryTools.cs       # execute_sql
-    ├── SchemaTools.cs      # describe_table, list_stored_procedures
-    ├── DiagnosticTools.cs  # get_connections, get_query_stats
-    └── ProcedureTools.cs   # get_procedure_definition
+├── Program.cs                      # Entry point
+├── Configuration/                  # Config models
+├── Models/                         # Data models
+├── Services/                       # Core services
+│   ├── ISqlService.cs              # SQL service interface
+│   ├── SqlService.cs               # SQL Server operations
+│   ├── IConnectionStringDiscoveryService.cs
+│   ├── ConnectionStringDiscoveryService.cs
+│   └── ResultFormatter.cs          # Output formatting
+└── Tools/                          # 6 tool classes (9 tools)
+    ├── QueryTools.cs               # execute_sql
+    ├── SchemaTools.cs              # describe_table, list_stored_procedures
+    ├── DiagnosticTools.cs          # get_connections, get_query_stats
+    ├── ProcedureTools.cs           # get_procedure_definition
+    ├── DatabaseTools.cs            # list_databases, get_current_database, switch_database (NEW!)
+    └── ConnectionDiscoveryTools.cs # discover_connection_strings (NEW!)
 ```
 
 ## Development

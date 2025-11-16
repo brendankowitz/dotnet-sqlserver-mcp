@@ -41,6 +41,11 @@ public interface ISqlService
     Task<QueryResult> ExecuteTableFunctionAsync(string functionName, object[]? parameters, int maxRows);
     Task<string> GetFunctionDefinitionAsync(string functionName);
     Task<List<ParameterInfo>> GetFunctionParametersAsync(string functionName);
+
+    // Database management
+    Task<List<DatabaseListInfo>> ListDatabasesAsync();
+    Task SwitchDatabaseAsync(string databaseName);
+    Task<string> GetCurrentDatabaseAsync();
 }
 
 // Additional model classes
@@ -123,4 +128,14 @@ public record StoredProcedureResult
     public int? ReturnValue { get; init; }
     public double ExecutionTimeSeconds { get; init; }
     public List<string> Messages { get; init; } = new();
+}
+
+public record DatabaseListInfo
+{
+    public required string DatabaseName { get; init; }
+    public int DatabaseId { get; init; }
+    public DateTime CreatedDate { get; init; }
+    public required string State { get; init; }
+    public required string RecoveryModel { get; init; }
+    public decimal SizeMB { get; init; }
 }

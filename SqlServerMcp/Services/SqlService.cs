@@ -1122,4 +1122,80 @@ public class SqlService : ISqlService
         // Same implementation as GetProcedureParametersAsync since they use the same system views
         return await GetProcedureParametersAsync(functionName);
     }
+
+    public async Task<List<DatabaseListInfo>> ListDatabasesAsync()
+    {
+        var sql = @"
+            SELECT
+                d.name AS DatabaseName,
+                d.database_id AS DatabaseId,
+                d.create_date AS CreatedDate,
+                d.state_desc AS State,
+                d.recovery_model_desc AS RecoveryModel,
+                CAST(SUM(mf.size) * 8.0 / 1024 AS DECIMAL(10,2)) AS SizeMB
+            FROM sys.databases d
+            LEFT JOIN sys.master_files mf ON d.database_id = mf.database_id
+            WHERE d.database_id > 4  -- Exclude system databases
+            GROUP BY d.name, d.database_id, d.create_date, d.state_desc, d.recovery_model_desc
+            ORDER BY d.name";
+
+        using var connection = CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand(sql, connection);
+        using var reader = await command.ExecuteReaderAsync();
+
+        var databases = new List<DatabaseListInfo>();
+        while (await reader.ReadAsync())
+        {
+            databases.Add(new DatabaseListInfo
+            {
+                DatabaseName = reader.GetString(0),
+                DatabaseId = reader.GetInt32(1),
+                CreatedDate = reader.GetDateTime(2),
+                State = reader.GetString(3),
+                RecoveryModel = reader.GetString(4),
+                SizeMB = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5)
+            });
+        }
+
+        return databases;
+    }
+
+    public async Task<string> GetCurrentDatabaseAsync()
+    {
+        using var connection = CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("SELECT DB_NAME()", connection);
+        var result = await command.ExecuteScalarAsync();
+        return result?.ToString() ?? "Unknown";
+    }
+
+    public async Task SwitchDatabaseAsync(string databaseName)
+    {
+        // Validate database name to prevent SQL injection
+        if (!Regex.IsMatch(databaseName, @"^[a-zA-Z0-9_]+$"))
+        {
+            throw new ArgumentException("Invalid database name. Only alphanumeric characters and underscores are allowed.");
+        }
+
+        using var connection = CreateConnection();
+        await connection.OpenAsync();
+
+        // First check if the database exists
+        var checkSql = "SELECT COUNT(*) FROM sys.databases WHERE name = @databaseName";
+        using var checkCommand = new SqlCommand(checkSql, connection);
+        checkCommand.Parameters.AddWithValue("@databaseName", databaseName);
+        var exists = (int)await checkCommand.ExecuteScalarAsync()! > 0;
+
+        if (!exists)
+        {
+            throw new ArgumentException($"Database '{databaseName}' does not exist.");
+        }
+
+        // Switch database
+        using var switchCommand = new SqlCommand($"USE [{databaseName}]", connection);
+        await switchCommand.ExecuteNonQueryAsync();
+    }
 }
