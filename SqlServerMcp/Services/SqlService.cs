@@ -10,15 +10,27 @@ namespace SqlServerMcp.Services;
 public class SqlService : ISqlService
 {
     private readonly SqlServerConfig _config;
+    private string _currentConnectionString;
 
     public SqlService(SqlServerConfig config)
     {
         _config = config;
+        _currentConnectionString = config.ConnectionString;
     }
 
     private SqlConnection CreateConnection()
     {
-        return new SqlConnection(_config.ConnectionString);
+        return new SqlConnection(_currentConnectionString);
+    }
+
+    public void SetConnectionString(string connectionString)
+    {
+        _currentConnectionString = connectionString;
+    }
+
+    public string GetConnectionString()
+    {
+        return _currentConnectionString;
     }
 
     private void ValidateReadOnly(string sql)

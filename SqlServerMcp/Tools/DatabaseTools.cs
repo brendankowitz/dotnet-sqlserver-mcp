@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using SqlServerMcp.Configuration;
 using SqlServerMcp.Services;
 
 namespace SqlServerMcp.Tools;
@@ -102,6 +103,37 @@ public class DatabaseTools
         catch (Exception ex)
         {
             return $"Error switching database: {ex.Message}";
+        }
+    }
+
+    [McpServerTool]
+    [Description("Connect to SQL Server using a new connection string. This allows dynamic connection to different SQL Server instances.")]
+    public async Task<string> ConnectWithConnectionString(
+        [Description("SQL Server connection string (e.g., 'Server=localhost;Database=MyDB;Trusted_Connection=True;TrustServerCertificate=True;')")] string connectionString)
+    {
+        try
+        {
+            // Validate the connection string before switching
+            await ConnectionValidator.ValidateConnectionAsync(connectionString);
+
+            // If validation succeeds, update the connection string
+            _sqlService.SetConnectionString(connectionString);
+
+            var currentDb = await _sqlService.GetCurrentDatabaseAsync();
+
+            return $"✅ Successfully connected!\nCurrent database: {currentDb}\n\n" +
+                   $"💡 Use 'list_databases' to see available databases or 'switch_database' to change database.";
+        }
+        catch (Exception ex)
+        {
+            return $"❌ Failed to connect: {ex.Message}\n\n" +
+                   $"Please verify your connection string and ensure:\n" +
+                   $"- The SQL Server instance is accessible\n" +
+                   $"- Credentials are correct\n" +
+                   $"- Firewall rules allow the connection\n\n" +
+                   $"Example connection strings:\n" +
+                   $"- Windows Auth: Server=localhost;Database=MyDB;Trusted_Connection=True;TrustServerCertificate=True;\n" +
+                   $"- SQL Auth: Server=localhost;Database=MyDB;User Id=sa;Password=Pass123;TrustServerCertificate=True;";
         }
     }
 }

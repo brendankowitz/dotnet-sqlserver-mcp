@@ -1,6 +1,6 @@
 # SQL Server MCP Server
 
-A .NET-based Model Context Protocol (MCP) server providing 9 essential tools for SQL Server database inspection, querying, debugging, and dynamic connection discovery.
+A .NET-based Model Context Protocol (MCP) server providing 10 essential tools for SQL Server database inspection, querying, debugging, and dynamic connection management.
 
 [![NuGet](https://img.shields.io/nuget/v/SqlServerLocalMcp.svg)](https://www.nuget.org/packages/SqlServerLocalMcp/)
 
@@ -156,7 +156,7 @@ Add to the `env` section:
 }
 ```
 
-## Available Tools (9)
+## Available Tools (10)
 
 ### Core Essential Tools
 
@@ -169,19 +169,14 @@ Add to the `env` section:
 | **get_query_stats** | Performance debugging | Pre-formatted top queries by CPU/duration/execution count |
 | **get_connections** | Connection monitoring | Active sessions with program names and login times |
 
-### Database Management Tools (NEW!)
+### Dynamic Connection & Database Management (NEW!)
 
 | Tool | Purpose | Unique Value |
 |------|---------|--------------|
+| **connect_with_connection_string** | Connect using a new connection string | Dynamically connect to any SQL Server instance at runtime |
 | **list_databases** | List all databases on the server | Discover available databases with size, state, and recovery model |
 | **get_current_database** | Show current database context | Check which database you're currently connected to |
 | **switch_database** | Switch to a different database | Dynamically change database context without reconnecting |
-
-### Connection Discovery Tools (NEW!)
-
-| Tool | Purpose | Unique Value |
-|------|---------|--------------|
-| **discover_connection_strings** | Find connection strings in solution | Automatically scan appsettings.json, .env files for SQL connection strings |
 
 ## Usage Examples
 
@@ -196,51 +191,36 @@ Add to the `env` section:
 - "Show me the top 10 slowest queries" → Uses `get_query_stats`
 - "Who is currently connected to the database?" → Uses `get_connections`
 
-### Dynamic Database Discovery (NEW!)
+### Dynamic Connection Management (NEW!)
+- "Connect to a different SQL Server using this connection string: ..." → Uses `connect_with_connection_string`
 - "What databases are available on this server?" → Uses `list_databases`
 - "Which database am I connected to?" → Uses `get_current_database`
 - "Switch to the ProductionDB database" → Uses `switch_database`
-- "Find all connection strings in my solution" → Uses `discover_connection_strings`
-- "Scan the project for SQL Server configuration files" → Uses `discover_connection_strings`
 
-## Dynamic Connection String Discovery
+## Dynamic Connection Management
 
-The MCP server can now discover SQL Server connection strings directly from your solution files! This eliminates the need for manual configuration and helps you quickly connect to databases defined in your project.
+The MCP server now supports dynamic connection management! You can:
 
-### How It Works
+### 1. **Connect with any connection string at runtime**
+Simply provide a connection string to the `connect_with_connection_string` tool:
 
-The `discover_connection_strings` tool scans your solution directory for:
+```
+Example: "Connect using: Server=myserver;Database=MyDB;Trusted_Connection=True;TrustServerCertificate=True;"
+```
 
-1. **appsettings.json files** (including appsettings.Development.json, appsettings.Production.json, etc.)
-   - Looks for the `ConnectionStrings` section
-   - Extracts all connection strings with their names
+The LLM can:
+- Read connection strings from your config files (appsettings.json, .env, etc.)
+- Ask you for a connection string
+- Use connection strings you provide in the conversation
 
-2. **.env files** (including .env.development, .env.production, etc.)
-   - Scans for environment variables containing SQL/DATABASE/CONNECTION keywords
-   - Identifies connection string patterns (Server=, Data Source=, etc.)
+### 2. **Switch between databases on the same server**
+Once connected, use the database management tools:
 
-### Example Usage
-
-Simply ask Claude:
-- "Find all SQL Server connection strings in my project"
-- "What databases are configured in this solution?"
-- "Scan for connection strings in appsettings files"
-
-The tool will return discovered connection strings with:
-- Connection string name
-- Source file and type (appsettings vs env)
-- Environment (Development, Production, etc.)
-- Masked connection string (passwords hidden for security)
-
-### Multi-Database Support
-
-Use the database management tools to work with multiple databases:
-
-1. **Discover available databases:** `list_databases`
+1. **List available databases:** `list_databases`
 2. **Check current database:** `get_current_database`
 3. **Switch to another database:** `switch_database`
 
-This allows you to dynamically explore different databases on the same server without reconfiguring the MCP server!
+This allows you to dynamically explore different databases and servers without reconfiguring the MCP server!
 
 ## Security
 
@@ -265,17 +245,15 @@ SqlServerMcp/
 ├── Models/                         # Data models
 ├── Services/                       # Core services
 │   ├── ISqlService.cs              # SQL service interface
-│   ├── SqlService.cs               # SQL Server operations
-│   ├── IConnectionStringDiscoveryService.cs
-│   ├── ConnectionStringDiscoveryService.cs
+│   ├── SqlService.cs               # SQL Server operations (with dynamic connection support)
 │   └── ResultFormatter.cs          # Output formatting
-└── Tools/                          # 6 tool classes (9 tools)
+└── Tools/                          # 5 tool classes (10 tools)
     ├── QueryTools.cs               # execute_sql
     ├── SchemaTools.cs              # describe_table, list_stored_procedures
     ├── DiagnosticTools.cs          # get_connections, get_query_stats
     ├── ProcedureTools.cs           # get_procedure_definition
-    ├── DatabaseTools.cs            # list_databases, get_current_database, switch_database (NEW!)
-    └── ConnectionDiscoveryTools.cs # discover_connection_strings (NEW!)
+    └── DatabaseTools.cs            # connect_with_connection_string, list_databases,
+                                    # get_current_database, switch_database (NEW!)
 ```
 
 ## Development

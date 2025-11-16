@@ -46,6 +46,10 @@ public interface ISqlService
     Task<List<DatabaseListInfo>> ListDatabasesAsync();
     Task SwitchDatabaseAsync(string databaseName);
     Task<string> GetCurrentDatabaseAsync();
+
+    // Connection management
+    void SetConnectionString(string connectionString);
+    string GetConnectionString();
 }
 
 // Additional model classes

@@ -66,7 +66,6 @@ builder.Services
 builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<ISqlService, SqlService>();
 builder.Services.AddSingleton<ResultFormatter>();
-builder.Services.AddSingleton<IConnectionStringDiscoveryService, ConnectionStringDiscoveryService>();
 
 var app = builder.Build();
 
